@@ -1,5 +1,6 @@
 package com.itzkazuri.kalenderbali.utils
 
+import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -15,7 +16,7 @@ object RahinaCalculator {
     }
 
     /**
-     * Returns a list of Balinese Hindu holidays (Nyepi, Siwaratri, Saraswati, Pagerwesi, Purnama, Tilem) based on the Gregorian date.
+     * Returns a list of Balinese Hindu holidays (Nyepi, Siwaratri, Saraswati, Pagerwesi, Purnama, Tilem, Sugihan Jawa, Sugihan Bali) based on the Gregorian date.
      */
     fun getRerahinan(tanggal: Int, bulan: Int, tahun: Int): List<String> {
         val calendar = Calendar.getInstance().apply {
@@ -30,7 +31,7 @@ object RahinaCalculator {
         val pancawara = saka.getSakaCalendar(SakaCalendar.NO_PANCAWARA)
         val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
 
-        val rerahinanList = mutableSetOf<String>() // Menggunakan Set agar tidak ada duplikasi
+        val rerahinanList = mutableSetOf<String>()
 
         // Nyepi: 1 Penanggal Sasih Kadasa (10 Sasih)
         if (sasih == 10 && penanggal == 1 && !isPangelong) {
@@ -52,9 +53,27 @@ object RahinaCalculator {
             rerahinanList.add("Pagerwesi")
         }
 
+        // Kajeng Kliwon: Pancawara = 5 (Kliwon) & Triwara = 3 (Kajeng)
+        if (pancawara == 5 && saka.getTriwara() == 3) {
+            rerahinanList.add("Kajeng Kliwon")
+        }
+
         // Purnama & Tilem
         val importantDates = SakaCalendarHelper.getImportantDates(tahun)
         importantDates.forEach { (eventCalendar, eventName) ->
+            if (eventCalendar.get(Calendar.DAY_OF_MONTH) == tanggal &&
+                eventCalendar.get(Calendar.MONTH) + 1 == bulan
+            ) {
+                rerahinanList.add(eventName)
+            }
+        }
+
+        // Sugihan Jawa & Sugihan Bali
+        val sugihanDates = SakaCalendarHelper.getAllSugihanInYear(tahun)
+        sugihanDates.forEach { (eventCalendar, eventName) ->
+            val eventDate = "${eventCalendar.get(Calendar.DAY_OF_MONTH)}-${eventCalendar.get(Calendar.MONTH) + 1}-${eventCalendar.get(Calendar.YEAR)}"
+            Log.d("SugihanCheck", "Sugihan ditemukan: $eventName pada $eventDate")
+
             if (eventCalendar.get(Calendar.DAY_OF_MONTH) == tanggal &&
                 eventCalendar.get(Calendar.MONTH) + 1 == bulan
             ) {
