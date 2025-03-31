@@ -3,38 +3,30 @@ package com.itzkazuri.kalenderbali.utils
 import java.util.*
 
 object SakaCalendarHelper {
-    // Constants for moon phases and holidays
     private const val FULL_MOON = "Purnama"
     private const val NEW_MOON = "Tilem"
     private const val NYEPI = "Hari Raya Nyepi"
     private const val SARASWATI = "Hari Raya Saraswati"
     private const val SIWARATRI = "Hari Suci Siwaratri"
+    private const val PAGERWESI = "Hari Raya Pagerwesi"
 
     private val pasaranList = listOf("Umanis", "Paing", "Pon", "Wage", "Kliwon")
     private val wukuNames = listOf(
-        "Sinta", "Landep", "Ukir", "Kulantir", "Tolu",
-        "Gumbreg", "Wariga", "Warigadian", "Julungwangi", "Sungsang",
-        "Dungulan", "Kuningan", "Langkir", "Medangsia", "Pujut",
-        "Pahang", "Krulut", "Merakih", "Tambir", "Madangkungan",
-        "Maktal", "Uye", "Manail", "Prangbakat", "Bala",
-        "Ugu", "Wayang", "Kelawu", "Dukut", "Watugunung"
+        "Sinta", "Landep", "Ukir", "Kulantir", "Tolu", "Gumbreg", "Wariga", "Warigadian", "Julungwangi", "Sungsang",
+        "Dungulan", "Kuningan", "Langkir", "Medangsia", "Pujut", "Pahang", "Krulut", "Merakih", "Tambir", "Madangkungan",
+        "Maktal", "Uye", "Manail", "Prangbakat", "Bala", "Ugu", "Wayang", "Kelawu", "Dukut", "Watugunung"
     )
 
-    /**
-     * Gets important dates in Balinese calendar for a given year
-     */
     fun getImportantDates(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             addAll(getPurnamaTilem(year))
             add(calculateNyepi(year) to NYEPI)
             calculateSiwaratri(year)?.let { add(it to SIWARATRI) }
             addAll(getAllSaraswatiInYear(year))
+            addAll(getAllPagerwesiInYear(year))
         }.sortedBy { it.first.timeInMillis }
     }
 
-    /**
-     * Calculates all full moon (Purnama) and new moon (Tilem) dates in a year
-     */
     private fun getPurnamaTilem(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
@@ -54,9 +46,6 @@ object SakaCalendarHelper {
         }
     }
 
-    /**
-     * Calculates Nyepi date (1 Penanggal Sasih Kadasa)
-     */
     fun calculateNyepi(year: Int): Calendar {
         val calendar = Calendar.getInstance().apply { set(year, Calendar.MARCH, 1) }
         val endDate = Calendar.getInstance().apply { set(year, Calendar.APRIL, 1) }
@@ -70,12 +59,9 @@ object SakaCalendarHelper {
             }
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
-        return Calendar.getInstance() // Fallback
+        return Calendar.getInstance()
     }
 
-    /**
-     * Calculates Siwaratri date (14 Pangelong Sasih Kapitu)
-     */
     fun calculateSiwaratri(year: Int): Calendar? {
         val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
         val endDate = Calendar.getInstance().apply { set(year, Calendar.DECEMBER, 31) }
@@ -92,9 +78,6 @@ object SakaCalendarHelper {
         return null
     }
 
-    /**
-     * Gets all Saraswati dates in a year (Saturday Umanis Wuku Watugunung)
-     */
     fun getAllSaraswatiInYear(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
@@ -112,80 +95,35 @@ object SakaCalendarHelper {
         }
     }
 
-    /**
-     * Converts Gregorian date to Saka date (year, month, day)
-     */
-    fun gregorianToSaka(calendar: Calendar): Triple<Int, Int, Int> {
-        val saka = createSakaCalendar(calendar)
-        return Triple(
-            saka.getSakaCalendar(SakaCalendar.TAHUN_SAKA),
-            saka.getSakaCalendar(SakaCalendar.NO_SASIH),
-            saka.getSakaCalendar(SakaCalendar.PENANGGAL)
-        )
-    }
+    fun getAllPagerwesiInYear(year: Int): List<Pair<Calendar, String>> {
+        return buildList {
+            val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
+            val endDate = Calendar.getInstance().apply { set(year, Calendar.DECEMBER, 31) }
 
-    /**
-     * Gets Wuku name for a date
-     */
-    fun getWukuName(calendar: Calendar): String {
-        val saka = createSakaCalendar(calendar)
-        return wukuNames.getOrElse(saka.getWuku(SakaCalendar.NO_WUKU) - 1) { "Unknown" }
-    }
+            while (calendar <= endDate) {
+                val saka = createSakaCalendar(calendar)
 
-    /**
-     * Gets Pasaran name for a date
-     */
-    fun getPasaran(calendar: Calendar): String {
-        val saka = createSakaCalendar(calendar)
-        return pasaranList.getOrElse(saka.getPancawara(SakaCalendar.NO_PANCAWARA) - 1) { "Unknown" }
-    }
+                // Tambahkan logging untuk melihat nilai yang dihitung
+                val wuku = saka.getWuku(SakaCalendar.NO_WUKU)
+                val pancawara = saka.getPancawara(SakaCalendar.NO_PANCAWARA)
+                val saptawara = saka.getSaptawara(SakaCalendar.NO_SAPTAWARA)
 
-    /**
-     * Checks if date is in Pangelong phase
-     */
-    fun isPangelong(calendar: Calendar): Boolean {
-        return createSakaCalendar(calendar).getSakaCalendarStatus(SakaCalendar.IS_PANGELONG)
-    }
+                println("Tanggal: ${calendar.time} | Wuku: $wuku | Pancawara: $pancawara | Saptawara: $saptawara")
 
-    /**
-     * Gets Wuku names list
-     */
-    fun getWukuNames(): List<String> = wukuNames
-
-    /**
-     * Formats important dates for a year as string
-     */
-    fun formatImportantDates(year: Int): String {
-        return buildString {
-            append("📅 Kalender Bali Tahun $year:\n\n")
-            getImportantDates(year).forEach { (date, event) ->
-                val sakaDate = gregorianToSaka(date)
-                append("${formatDate(date)} - $event\n")
-                append("   (Tahun Saka ${sakaDate.first}, Sasih ${sakaDate.second}, Penanggal ${sakaDate.third})\n")
-                append("   Wuku ${getWukuName(date)}, ${getPasaran(date)}\n\n")
+                if (wuku == 1 && pancawara == 5 && saptawara == 3) {
+                    add(calendar.clone() as Calendar to PAGERWESI)
+                }
+                calendar.add(Calendar.DAY_OF_MONTH, 1)
             }
         }
     }
 
-    /**
-     * Helper to create SakaCalendar instance
-     */
-    private fun createSakaCalendar(calendar: Calendar): SakaCalendar {
+
+    fun createSakaCalendar(calendar: Calendar): SakaCalendar {
         return SakaCalendar(
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         )
-    }
-
-    /**
-     * Formats date as dd/MM/yyyy
-     */
-    private fun formatDate(date: Calendar): String {
-        return date.run {
-            "${get(Calendar.DAY_OF_MONTH).toString().padStart(2, '0')}/" +
-                    "${(get(Calendar.MONTH) + 1).toString().padStart(2, '0')}/" +
-                    get(Calendar.YEAR)
-        }
     }
 }
