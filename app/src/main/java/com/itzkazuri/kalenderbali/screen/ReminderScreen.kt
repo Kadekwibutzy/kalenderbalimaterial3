@@ -6,6 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+
+//cooming soon feature stay tuned
 @Composable
 fun ReminderScreen() {
     Column(

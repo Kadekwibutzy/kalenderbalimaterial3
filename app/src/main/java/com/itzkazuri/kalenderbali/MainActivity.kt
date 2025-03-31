@@ -101,6 +101,8 @@ fun NavigationHost(navController: NavHostController, paddingValues: PaddingValue
     }
 }
 
+
+//this feature for navbar navigation like home,calendar, and settings
 @Composable
 fun BottomNavigationBar(navController: NavHostController, selectedItem: String, onItemSelected: (String) -> Unit) {
     NavigationBar(

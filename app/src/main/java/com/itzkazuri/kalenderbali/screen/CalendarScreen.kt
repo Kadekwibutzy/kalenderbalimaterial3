@@ -29,22 +29,29 @@ fun CalendarScreen(
     modifier: Modifier = Modifier,
     onAddReminderClick: () -> Unit,
     onDateClick: (Int, Int, Int) -> Unit
+
 ) {
+    // Stores the current timestamp in milliseconds for the calendar
     var calendarMillis by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
+    // Creates a calendar instance based on the stored timestamp
     val calendar = remember(calendarMillis) {
         Calendar.getInstance().apply { timeInMillis = calendarMillis }
     }
-
+    // Stores the selected date
     var selectedDate by remember { mutableStateOf(calendar.get(Calendar.DAY_OF_MONTH)) }
+    // Tracks transition direction for calendar navigation
     var transitionDirection by remember { mutableStateOf(0) }
-
+    // Checks if the system is in dark mode
     val isDarkMode = isSystemInDarkTheme()
+    // Determines text color based on the theme
     val textColor = if (isDarkMode) Color.White else Color.Black
 
+    // Extracts the year, month, and today's date from the calendar
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH)
     val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
 
+    // Generates the full calendar grid for the current month
     val fullCalendarGrid by remember(calendarMillis) {
         derivedStateOf {
             val tempCalendar = Calendar.getInstance().apply { timeInMillis = calendarMillis }
@@ -59,6 +66,7 @@ fun CalendarScreen(
         }
     }
 
+    // Retrieves the Balinese ceremonial days (Rahinan) for the selected date
     val rahinaHariIni = RahinaCalculator.getRerahinan(selectedDate, month + 1, year)
 
     Scaffold(
@@ -133,6 +141,7 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Displays the days of the week in Indonesian
             Row(modifier = Modifier.fillMaxWidth()) {
                 listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min").forEach { day ->
                     Text(
@@ -147,6 +156,7 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Displays the calendar days
             Column {
                 fullCalendarGrid.chunked(7).forEach { week ->
                     Row(modifier = Modifier.fillMaxWidth()) {
@@ -191,6 +201,7 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Displays today's Rahinan (Balinese ceremonial day)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

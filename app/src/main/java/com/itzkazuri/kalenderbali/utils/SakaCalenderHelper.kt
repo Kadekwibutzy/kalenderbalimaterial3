@@ -3,6 +3,7 @@ package com.itzkazuri.kalenderbali.utils
 import java.util.*
 
 object SakaCalendarHelper {
+    // Constants for significant Balinese Hindu holidays
     private const val FULL_MOON = "Purnama"
     private const val NEW_MOON = "Tilem"
     private const val NYEPI = "Hari Raya Nyepi"
@@ -10,13 +11,20 @@ object SakaCalendarHelper {
     private const val SIWARATRI = "Hari Suci Siwaratri"
     private const val PAGERWESI = "Hari Raya Pagerwesi"
 
+    // List of Balinese pasaran (5-day cycle)
     private val pasaranList = listOf("Umanis", "Paing", "Pon", "Wage", "Kliwon")
+
+    // List of wuku names (30 weeks in the Balinese calendar cycle)
     private val wukuNames = listOf(
         "Sinta", "Landep", "Ukir", "Kulantir", "Tolu", "Gumbreg", "Wariga", "Warigadian", "Julungwangi", "Sungsang",
         "Dungulan", "Kuningan", "Langkir", "Medangsia", "Pujut", "Pahang", "Krulut", "Merakih", "Tambir", "Madangkungan",
         "Maktal", "Uye", "Manail", "Prangbakat", "Bala", "Ugu", "Wayang", "Kelawu", "Dukut", "Watugunung"
     )
 
+    /**
+     * Returns a list of important Balinese Hindu dates for the given year.
+     * This includes Purnama, Tilem, Nyepi, Siwaratri, Saraswati, and Pagerwesi.
+     */
     fun getImportantDates(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             addAll(getPurnamaTilem(year))
@@ -27,6 +35,9 @@ object SakaCalendarHelper {
         }.sortedBy { it.first.timeInMillis }
     }
 
+    /**
+     * Calculates and returns a list of Purnama (full moon) and Tilem (new moon) dates for the given year.
+     */
     private fun getPurnamaTilem(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
@@ -38,14 +49,17 @@ object SakaCalendarHelper {
                 val isPangelong = saka.getSakaCalendarStatus(SakaCalendar.IS_PANGELONG)
 
                 when {
-                    penanggal == 15 && !isPangelong -> add(calendar.clone() as Calendar to FULL_MOON)
-                    penanggal == 15 && isPangelong -> add(calendar.clone() as Calendar to NEW_MOON)
+                    penanggal == 15 && !isPangelong -> add(calendar.clone() as Calendar to FULL_MOON) // Full moon
+                    penanggal == 15 && isPangelong -> add(calendar.clone() as Calendar to NEW_MOON) // New moon
                 }
                 calendar.add(Calendar.DAY_OF_MONTH, 1)
             }
         }
     }
 
+    /**
+     * Calculates the Nyepi (Balinese New Year) date based on 1 Penanggal Sasih Kadasa (10th month in Saka Calendar).
+     */
     fun calculateNyepi(year: Int): Calendar {
         val calendar = Calendar.getInstance().apply { set(year, Calendar.MARCH, 1) }
         val endDate = Calendar.getInstance().apply { set(year, Calendar.APRIL, 1) }
@@ -62,6 +76,9 @@ object SakaCalendarHelper {
         return Calendar.getInstance()
     }
 
+    /**
+     * Calculates Siwaratri, which occurs on the 14th Pangelong of Sasih Kapitu (7th month in Saka Calendar).
+     */
     fun calculateSiwaratri(year: Int): Calendar? {
         val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
         val endDate = Calendar.getInstance().apply { set(year, Calendar.DECEMBER, 31) }
@@ -78,6 +95,10 @@ object SakaCalendarHelper {
         return null
     }
 
+    /**
+     * Finds all Saraswati dates in the given year.
+     * Saraswati occurs on Saturday Umanis Wuku Watugunung.
+     */
     fun getAllSaraswatiInYear(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
@@ -95,6 +116,10 @@ object SakaCalendarHelper {
         }
     }
 
+    /**
+     * Finds all Pagerwesi dates in the given year.
+     * Pagerwesi occurs on Wednesday Kliwon Wuku Sinta (Wuku 1, Pancawara 5, and Saptawara 3).
+     */
     fun getAllPagerwesiInYear(year: Int): List<Pair<Calendar, String>> {
         return buildList {
             val calendar = Calendar.getInstance().apply { set(year, Calendar.JANUARY, 1) }
@@ -102,13 +127,9 @@ object SakaCalendarHelper {
 
             while (calendar <= endDate) {
                 val saka = createSakaCalendar(calendar)
-
-                // Tambahkan logging untuk melihat nilai yang dihitung
                 val wuku = saka.getWuku(SakaCalendar.NO_WUKU)
                 val pancawara = saka.getPancawara(SakaCalendar.NO_PANCAWARA)
                 val saptawara = saka.getSaptawara(SakaCalendar.NO_SAPTAWARA)
-
-                println("Tanggal: ${calendar.time} | Wuku: $wuku | Pancawara: $pancawara | Saptawara: $saptawara")
 
                 if (wuku == 1 && pancawara == 5 && saptawara == 3) {
                     add(calendar.clone() as Calendar to PAGERWESI)
@@ -118,7 +139,9 @@ object SakaCalendarHelper {
         }
     }
 
-
+    /**
+     * Creates a SakaCalendar object based on the given Gregorian calendar date.
+     */
     fun createSakaCalendar(calendar: Calendar): SakaCalendar {
         return SakaCalendar(
             calendar.get(Calendar.YEAR),
